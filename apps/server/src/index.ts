@@ -8,7 +8,7 @@ const app = express();
 
 app.use(express.json());
 
-app.get("/", (_req, res) => {
+app.get("/", (req, res) => {
     res.json({
         message: "E2B Agent Server is running",
     });
@@ -22,85 +22,159 @@ app.get("/ai", async (_req, res) => {
     try {
         const sandbox = await Sandbox.create();
 
-        const interaction = await gemini.interactions.create({
+        let interaction = await gemini.interactions.create({
             model: "gemini-3.6-flash",
 
-            input: "Create a file called hello.txt containing exactly 'Hello World.'",
+            input:
+                "Create a file called test.py containing a Python program that prints 'Hello from Python', then run that program.",
 
-            tools: [
-                {
-                    type: "function",
-                    name: "update_file",
-                    description: "Create or update a file inside the E2B sandbox.",
-                    parameters: {
-                        type: "object",
-                        properties: {
-                            path: {
-                                type: "string",
-                                description: "The path of the file to create or update.",
-                            },
-                            content: {
-                                type: "string",
-                                description: "The content to write into the file.",
-                            },
-                        },
-                        required: ["path", "content"],
-                    },
-                },
-            ],
+            tools,
         });
 
-        console.log("Gemini interaction:", interaction);
+        while (interaction.status === "requires_action") {
 
-
-        // 👇 ADD THIS HERE
-
-        const functionCall = interaction.steps.find(
-            (step) => step.type === "function_call"
-        );
-
-
-        if (
-            functionCall &&
-            functionCall.type === "function_call" &&
-            functionCall.name === "update_file"
-        ) {
-            const args = functionCall.arguments as {
-                path: string;
-                content: string;
-            };
-
-            console.log("Gemini wants to update:", args);
-
-
-            // Actually write the file into E2B
-            await sandbox.files.write(
-                `/home/user/${args.path}`,
-                args.content
+            console.log(
+                "Gemini interaction status:",
+                interaction.status
             );
 
-            console.log("File written successfully!");
-
-
-            // Read it back to verify
-            const content = await sandbox.files.read(
-                `/home/user/${args.path}`
+            const functionCall = interaction.steps.find(
+                (step) => step.type === "function_call"
             );
 
-            console.log("File content:", content);
+            if (
+                !functionCall ||
+                functionCall.type !== "function_call"
+            ) {
+                throw new Error(
+                    "Gemini requires action but no function call was found"
+                );
+            }
+
+            const args =
+                functionCall.arguments as Record<string, string>;
+
+            console.log(
+                "Gemini wants to call:",
+                functionCall.name
+            );
+
+            console.log("Arguments:", args);
+
+            let toolResult;
+
+            if (functionCall.name === "update_file") {
+
+                const filePath = args.path.startsWith("/home/user/")
+                    ? args.path
+                    : `/home/user/${args.path}`;
+
+                await sandbox.files.write(
+                    filePath,
+                    args.content
+                );
+
+                console.log(
+                    "File written successfully:",
+                    filePath
+                );
+
+                toolResult = {
+                    type: "function_result" as const,
+                    call_id: functionCall.id,
+                    name: functionCall.name,
+
+                    result: {
+                        success: true,
+                        path: args.path,
+                        message: "File was successfully written",
+                    },
+                };
+
+            } else if (functionCall.name === "run_command") {
+
+                console.log(
+                    "Running command:",
+                    args.command
+                );
+
+                const result = await sandbox.commands.run(
+                    args.command
+                );
+
+                console.log(
+                    "Command output:",
+                    result.stdout
+                );
+
+                console.log(
+                    "Command error:",
+                    result.stderr
+                );
+
+                toolResult = {
+                    type: "function_result" as const,
+                    call_id: functionCall.id,
+                    name: functionCall.name,
+
+                    result: {
+                        success: true,
+                        stdout: result.stdout,
+                        stderr: result.stderr,
+                    },
+                };
+
+            } else {
+                throw new Error(
+                    `Unknown tool: ${functionCall.name}`
+                );
+            }
+
+            console.log(
+                "Sending tool result to Gemini:",
+                toolResult
+            );
+
+            interaction = await gemini.interactions.create({
+                model: "gemini-3.6-flash",
+
+                previous_interaction_id: interaction.id,
+
+                input: [toolResult],
+            });
+
+            console.log(
+                "Next Gemini status:",
+                interaction.status
+            );
         }
 
+        // IMPORTANT:
+        // This must be OUTSIDE the while loop.
+        console.log(
+            "Gemini completed:",
+            interaction.output_text
+        );
 
-        res.json({
+        return res.json({
             success: true,
+            output: interaction.output_text,
         });
 
     } catch (error) {
-        console.error("Gemini error:", error);
 
-        res.status(500).json({
+        console.error(
+            "Gemini error:",
+            error
+        );
+
+        return res.status(500).json({
             success: false,
-            error: error instanceof Error ? error.message : String(error),
+
+            error:
+                error instanceof Error
+                    ? error.message
+                    : String(error),
         });
     }
 });
