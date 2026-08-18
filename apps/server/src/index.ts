@@ -112,75 +112,65 @@ app.post("/ai", async (req, res) => {
         console.log("file content", content);
 
         toolResult = {
-          type:"function_result" as const,
-          call_id:functionCall.id,
-          name:functionCall.name,
+          type: "function_result" as const,
+          call_id: functionCall.id,
+          name: functionCall.name,
 
-          result:{
-            success:true,
-            path:args.path,
-            content
-          }
-        }
-
-
-
-
-      }else if(functionCall.name === "delete_file"){
-
-        const filePath = args.path.startsWith("/home/user") ? args.path : `/home/user/${args.path}`;
-
+          result: {
+            success: true,
+            path: args.path,
+            content,
+          },
+        };
+      } else if (functionCall.name === "delete_file") {
+        const filePath = args.path.startsWith("/home/user")
+          ? args.path
+          : `/home/user/${args.path}`;
 
         await sandbox.files.remove(filePath);
 
-        console.log("File deleted successfully:",filePath);
+        console.log("File deleted successfully:", filePath);
 
-        toolResult={
-          type:"function_result" as const,
-          call_id:functionCall.id,
-          name:functionCall.name,
+        toolResult = {
+          type: "function_result" as const,
+          call_id: functionCall.id,
+          name: functionCall.name,
 
-          result:{
-            success:true,
-            path:args.path,
-            message:"File was successfully deleted"
-          }
-
-        }
-
-      }else if (functionCall.name === "start_server"){
+          result: {
+            success: true,
+            path: args.path,
+            message: "File was successfully deleted",
+          },
+        };
+      } else if (functionCall.name === "start_server") {
         const port = Number(args.port);
 
-        console.log("Starting server:",args.command);
+        console.log("Starting server:", args.command);
 
         console.log("Port:", port);
 
-        await sandbox.commands.run(args.command,{
-          background:true,
+        await sandbox.commands.run(args.command, {
+          background: true,
         });
 
         const host = sandbox.getHost(port);
 
         const previewUrl = `https://${host}`;
 
-        console.log("Preview URL:",previewUrl);
+        console.log("Preview URL:", previewUrl);
 
-        toolResult={
-          type:"function_result" as const,
-          call_id:functionCall.id,
-          name:functionCall.name,
+        toolResult = {
+          type: "function_result" as const,
+          call_id: functionCall.id,
+          name: functionCall.name,
 
-          result:{
-            success:true,
+          result: {
+            success: true,
             previewUrl,
-            message:"Server started successfully"
-          }
-        }
-      }
-      
-      
-      
-      else {
+            message: "Server started successfully",
+          },
+        };
+      } else {
         throw new Error(`Unknown tool: ${functionCall.name}`);
       }
 
@@ -265,3 +255,23 @@ const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+
+
+import { prisma } from "@e2b-agent/database";
+
+async function testDatabase() {
+  try {
+    await prisma.$connect();
+
+    console.log("Database connected from server");
+
+    const users = await prisma.user.findMany();
+
+    console.log("Users:", users);
+  } catch (error) {
+    console.error("Database error:", error);
+  }
+}
+
+testDatabase();
