@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import authRoutes from "./routes/auth.routes";
+import authMiddleware from "./middleware/auth.middleware";
 
 const app = express();
 
@@ -18,5 +20,11 @@ app.get("/", (_req, res) => {
     message: "E2B Agent Server is running",
   });
 });
+
+app.get("/protected",authMiddleware)
+
+app.use("/auth",authRoutes)
+
+
 
 export default app;
