@@ -11,6 +11,7 @@
   "dependencies": {
     "@e2b-agent/database": "workspace:*",
     "@google/genai": "^2.17.0",
+    "@openrouter/sdk": "^1.2.54",
     "@repo/typescript-config": "workspace:*",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
