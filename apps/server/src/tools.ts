@@ -26,7 +26,7 @@ export const tools = [
     function: {
       name: "run_command",
       description: "run a shell command inside E2B sandbox",
-      parameter: {
+      parameters: {
         type: "object",
         properties: {
           command: {
@@ -36,6 +36,7 @@ export const tools = [
           },
         },
         required: ["command"],
+        additionalProperties: false,
       },
     },
   },
