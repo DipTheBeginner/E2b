@@ -4,7 +4,29 @@ import { Sandbox } from "e2b";
 import { Request, Response } from "express";
 import { tools } from "../tools";
 
-export default async function aiController(req: Request, res: Response) {
+const SYSTEM_PROMPT = `
+You are an AI coding agent.
+
+Your job is to execute the user's coding requests inside an E2B sandbox.
+
+You have access to these tools:
+- update_file: create or update files
+- run_command: execute shell commands
+- start_server: start a web server and generate a preview URL
+
+Rules:
+
+1. Understand what the user wants before acting.
+2. When the user asks you to create or modify a website, actually create or modify the files in the E2B sandbox.
+3. Use update_file to create or update files.
+4. Use run_command when you need to execute commands.
+5. When a website needs to be previewed, use start_server.
+6. After completing the task, give the user a short summary of what was done.
+7. If a preview URL is available, include it in the final response.
+8. Do not only explain code when the user asks you to build something. Actually perform the task using the available tools.
+`;
+
+export async function aiController(req: Request, res: Response) {
   try {
     const { prompt } = req.body;
 
@@ -15,30 +37,12 @@ export default async function aiController(req: Request, res: Response) {
       });
     }
 
-    const sandbox = await Sandbox.create({ timeoutMs: 10 * 60 * 1000 }); // 10 minutes
+    const sandbox = await Sandbox.create();
 
     const messages: any[] = [
       {
         role: "system",
-        content: `
-      You are an AI web development agent.
-
-      Your job is to build websites inside the E2B sandbox based on the user's request.
-
-      You have access to tools that allow you to create and modify files and run commands inside the sandbox.
-
-      When the user asks you to build a website:
-      - Understand the user's requirements.
-      - Create the necessary files inside the E2B sandbox.
-      - Use update_file to create or update files.
-      - Use run_command when you need to execute commands.
-      - Inspect command results before continuing.
-      - Continue using tools until the requested website is complete.
-      - Do not claim that something was created unless you actually performed the required tool actions.
-      - When the website is complete, give a concise final response.
-
-      Focus on producing a functional, polished website that matches the user's requirements.
-        `,
+        content: SYSTEM_PROMPT,
       },
       {
         role: "user",
@@ -59,7 +63,6 @@ export default async function aiController(req: Request, res: Response) {
           body: JSON.stringify({
             model: "stealth/ox-alpha",
             messages,
-
             tools,
           }),
         },
@@ -80,26 +83,14 @@ export default async function aiController(req: Request, res: Response) {
 
       console.log("ox Alpha response:", JSON.stringify(message, null, 2));
 
+      if (!message) {
+        throw new Error("No mesasge returned from ox alpha");
+      }
+
       if (!message.tool_calls || message.tool_calls.length === 0) {
-        // 1. Set the timeout to keep the sandbox alive for 10 minutes
-        await sandbox.setTimeout(10 * 60 * 1000);
-
-        // 2. FORCE KILL any leftover ghost servers the AI might have left on the port
-        await sandbox.commands.run("pkill -f python || true");
-
-        // 3. Start a fresh, clean web server in the background
-        await sandbox.commands.run("python3 -m http.server 3000", {
-          background: true,
-          cwd: "/home/user", // Tells Python to serve files from here
-        });
-
-        // 4. Get the public URL for port 3000
-        const liveUrl = `https://${sandbox.getHost(3000)}`;
-
         return res.status(200).json({
           success: true,
           output: message.content,
-          url: liveUrl,
         });
       }
 
@@ -139,6 +130,28 @@ export default async function aiController(req: Request, res: Response) {
           };
 
           console.log("Commanad result:", toolResult);
+        } else if (toolName === "start_server") {
+          if (!args.port) {
+            throw new Error("start_server tool was called without a port");
+          }
+          const port = args.port;
+          await sandbox.commands.run(
+            `python3 -m http.server ${port} --directory /home/user`,
+            {
+              background: true,
+            },
+          );
+
+          const host = sandbox.getHost(port);
+          const previewUrl = `https://${host}`;
+
+          toolResult = {
+            success: true,
+            port,
+            previewUrl,
+            message: "Web server started successfully",
+          };
+          console.log("previewUrl", previewUrl);
         } else {
           toolResult = {
             success: false,

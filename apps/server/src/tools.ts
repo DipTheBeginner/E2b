@@ -40,4 +40,23 @@ export const tools = [
       },
     },
   },
+
+  {
+    type: "function" as const,
+    function: {
+      name: "start_server",
+      description:
+        "Start a web server inside the E2B sandbox for the generated website. Use this after creating the website files.",
+      parameters: {
+        type: "object",
+        properties: {
+          port: {
+            type: "number",
+            description: "The port on which website should run",
+          },
+        },
+        required: ["port"],
+      },
+    },
+  },
 ];
