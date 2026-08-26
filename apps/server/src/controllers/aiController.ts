@@ -61,7 +61,8 @@ export async function aiController(req: Request, res: Response) {
             Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           },
           body: JSON.stringify({
-            model: "stealth/ox-alpha",
+            model: "z-ai/glm-5.2",
+            max_tokens: 8000,
             messages,
             tools,
           }),
@@ -74,6 +75,7 @@ export async function aiController(req: Request, res: Response) {
         return res.status(response.status).json({
           success: false,
           message: "Openrouter request failed",
+          error: errorText,
         });
       }
 
@@ -135,12 +137,14 @@ export async function aiController(req: Request, res: Response) {
             throw new Error("start_server tool was called without a port");
           }
           const port = args.port;
-          await sandbox.commands.run(
+          const result = await sandbox.commands.run(
             `python3 -m http.server ${port} --directory /home/user`,
             {
               background: true,
             },
           );
+
+          console.log("Server command result:", result);
 
           const host = sandbox.getHost(port);
           const previewUrl = `https://${host}`;
@@ -152,6 +156,20 @@ export async function aiController(req: Request, res: Response) {
             message: "Web server started successfully",
           };
           console.log("previewUrl", previewUrl);
+        } else if (toolName === "read_file") {
+          const filePath = args.path.startsWith("/home/user/")
+            ? args.path
+            : `/home/user/${args.path}`;
+
+          const content = await sandbox.files.read(filePath);
+
+          toolResult = {
+            success: true,
+            path: filePath,
+            content,
+          };
+
+          console.log("File read:", filePath);
         } else {
           toolResult = {
             success: false,
