@@ -170,6 +170,20 @@ export async function aiController(req: Request, res: Response) {
           };
 
           console.log("File read:", filePath);
+        } else if (toolName === "delete_file") {
+          const filePath = args.path.startsWith("/home/user/")
+            ? args.path
+            : `/home/user/${args.path}`;
+
+          await sandbox.files.remove(filePath);
+
+          toolResult = {
+            success: true,
+            path: filePath,
+            message: "File deleted successfully",
+          };
+
+          console.log("File deleted:", filePath);
         } else {
           toolResult = {
             success: false,
