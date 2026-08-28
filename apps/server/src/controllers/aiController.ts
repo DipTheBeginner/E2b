@@ -26,6 +26,8 @@ Rules:
 8. Do not only explain code when the user asks you to build something. Actually perform the task using the available tools.
 `;
 
+let sandbox: Sandbox | null = null;
+
 export async function aiController(req: Request, res: Response) {
   try {
     const { prompt } = req.body;
@@ -37,7 +39,12 @@ export async function aiController(req: Request, res: Response) {
       });
     }
 
-    const sandbox = await Sandbox.create();
+    if (!sandbox) {
+      sandbox = await Sandbox.create();
+      console.log("New sandbox created:", sandbox.sandboxId);
+    } else {
+      console.log("Reusing sandbox:", sandbox.sandboxId);
+    }
 
     const messages: any[] = [
       {
