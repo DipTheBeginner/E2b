@@ -24,8 +24,8 @@ export const tools = [
   {
     type: "function" as const,
     function: {
-      name: "update_file",
-      description: "Read the content of the file inside the E2B sandbox",
+      name: "read_file",
+      description: "Read the content of a file inside the E2B sandbox",
       parameters: {
         type: "object",
         properties: {
@@ -33,12 +33,9 @@ export const tools = [
             type: "string",
             description: "Path relative to /home/user",
           },
-          content: {
-            type: "string",
-            description: "complete content of the file",
-          },
-          required: ["path", "content"],
         },
+        required: ["path"],
+        additionalProperties: false,
       },
     },
   },
@@ -47,23 +44,19 @@ export const tools = [
     type: "function" as const,
     function: {
       name: "delete_file",
-      description: "Delete the file inside the E2B sandbox",
+      description: "Delete a file inside the E2B sandbox",
       parameters: {
         type: "object",
         properties: {
           path: {
             type: "string",
-            description: "path relative to /home/user",
-            
+            description: "Path relative to /home/user",
           },
-        
-          required: ["path"],
-          additionalProperties: false,
-          
-          
-        }
-      }
-    }
+        },
+        required: ["path"],
+        additionalProperties: false,
+      },
+    },
   },
 
   {
