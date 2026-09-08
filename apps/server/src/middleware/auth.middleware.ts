@@ -1,14 +1,13 @@
 import { prisma } from "@e2b-agent/database";
 import { Request, Response } from "express";
 import { NextFunction } from "express-serve-static-core";
-import jwt from "jsonwebtoken"
+import jwt, { JwtPayload } from "jsonwebtoken";
 
-
-
-
-
-export default async function authMiddleware(req: Request, res: Response, next: NextFunction) {
-
+export default async function authMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const authHeader = req.headers.authorization;
 
@@ -37,38 +36,35 @@ export default async function authMiddleware(req: Request, res: Response, next: 
       });
     }
 
-    const decoded = jwt.verify(token, "secret") as unknown as {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload & {
       id: string;
-      email: string;
     };
 
     const user = await prisma.user.findUnique({
       where: {
         id: decoded.id,
-      }
-    })
+      },
+    });
 
     if (!user) {
-         return res.status(401).json({
-           success: false,
-           message: "User no longer exists",
-         });
-       }
+      return res.status(401).json({
+        success: false,
+        message: "User no longer exists",
+      });
+    }
 
-     req.user = {
+    req.user = {
       id: user.id,
-      email:user.email
-     }
+      email: user.email,
+    };
 
     next();
-    
   } catch (error) {
     console.log("Auth middleware error :", error);
 
     return res.status(401).json({
       success: false,
-      message:"Invalid or expire token"
-    })
+      message: "Invalid or expire token",
+    });
   }
-
 }

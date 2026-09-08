@@ -3,6 +3,7 @@ import cors from "cors";
 import authRoutes from "./routes/auth.routes";
 import authMiddleware from "./middleware/auth.middleware";
 import aiRoutes from "./routes/ai.routes";
+import projectRoutes from "./routes/projectRoutes";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.get("/protected",authMiddleware)
 
 app.use("/auth", authRoutes)
 app.use("/ai", aiRoutes);
+app.use("/projects",projectRoutes)
 
 
 
