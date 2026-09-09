@@ -4,7 +4,8 @@ import { Request, Response } from "express";
 
 export async function projectController(req: Request, res: Response) {
   try {
-    const { name, userId } = req.body;
+    const { name } = req.body;
+    const userId = req.user!.id;
 
     if (!name || !userId) {
       return res.status(400).json({
