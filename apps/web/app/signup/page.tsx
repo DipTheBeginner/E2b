@@ -1,124 +1,71 @@
-"use client"
+export default function SignupPage() {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-[#0b0711] w-full ">
+      <div className="flex w-full max-w-[1000px] h-[600px] border rounded-md border-slate-800 p-4">
+        <div className="flex flex-col flex-1 gap-2 items-center justify-center bg-[radial-gradient(ellipse_150%_100%_at_50%_100%,#000000_40%,transparent_80%),linear-gradient(to_bottom,#d8b4fe_0%,#6b21a8_45%,#000000_100%)] w-[55%] h-full">
+          <div className="flex flex-col items-center justify-center w-1/2">
+            <h2 className="text-2xl text-slate-50 font-semibold">Loveable</h2>
+            <h1 className="text-2xl text-slate-50 mt-3">Get started with us</h1>
+            <span className="text-slate-400 font-light text-center mt-1">
+              Complete these easy steps to register your account
+            </span>
 
+            <div className="mt-8 w-full flex flex-col mx-auto max-w-md gap-1">
+              <div className="flex flex-row border rounded-md border-gray-400 h-1/2 px-4 py-2 items-center bg-slate-100 gap-2">
+                <span className="flex borded rounded-full w-4 h-4 bg-slate-950 text-slate-50 items-center justify-center text-xs">1</span>
+                <span>sign up your account</span>
+              </div>
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { signup } from "../api/auth";
-import Image from "next/image";
+              <div className="flex flex-row border rounded-md border-gray-400 h-1/ px-4 py-2 items-center  bg-slate-100 gap-2">
+                <span className="flex borded rounded-full w-4 h-4 bg-slate-950 text-slate-50 items-center justify-center text-xs">1</span>
+                <span>set up your workspace</span>
+              </div>
 
-
-
-
-
-export default function SignUpPage() {
-    const router = useRouter();
-
-
-    const [userName, setUserName] = useState("")
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    // const [showPassword, setShowPassword] = useState(false);
-
-
-    async function handleSignUp() {
-
-        if (!userName.trim() || !email.trim() || !password.trim()) {
-            return;
-    }
-
-        try {
-            const data = await signup(
-                userName,
-                email,
-                password
-            );
-
-            console.log(data);
-
-            if (data.success) {
-                localStorage.setItem("token", data.token);
-                router.push("/chat");
-            }
-
-
-
-
-        } catch (error) {
-            console.error("Signup failed", error)
-
-        }
-
-    }
-
-
-
-    return (
-
-        <div className="bg-[#646176] min-h-screen flex items-center justify-center">
-            <div className="flex flex-row bg-[#2C2736] w-3/4  max-w-5xl overflow-hidden justify-between rounded-4xl h-[650px] ">
-
-                <div className="w-1/2 p-4 h-full">
-
-                    <Image
-                        src="/signup.jpg"
-                        alt="Signup"
-                        width={500}
-                        height={500}
-                        className="w-full object-cover h-full rounded-2xl"
-                    />
-
-                </div>
-
-                <div className="flex flex-col px-12 w-1/2 py-16 mb-">
-
-                    <div className="flex flex-col gap-2 ">
-
-                        <div className="text-3xl text-slate-50 ">Create an account</div>
-
-                        <div className="flex flex-row gap-2">
-                            <div className="text-[#51505E] font-semibold">Already have an account?</div>
-                            <a className="text-[#51505E] underline" href="">Log in</a>
-                        </div>
-
-                    </div>
-
-                    <div className="flex flex-col gap-4 mt-8">
-
-
-                        <input type="text"
-                            className="bg-[#3C364B] w-11/12 py-2 rounded-md text-slate-200 outline-none px-4"
-                            placeholder="Username"
-                            value={userName}
-                            onChange={(e) => setUserName(e.target.value)}
-                        />
-
-
-                        <input type="text"
-                            className="bg-[#3C364B] w-11/12 py-2 rounded-md text-slate-200 outline-none px-4"
-                            placeholder="Email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-
-                        />
-
-                        <input type="password"
-                            placeholder="Enter your passwod"
-                            className="bg-[#3C364B] w-11/12 py-2 rounded-md text-slate-200 outline-none px-4"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-
-                        />
-                    </div>
-
-                    <button onClick={handleSignUp}
-                        className="bg-[#8D3ECA] cursor-pointer mt-20 w-11/12 rounded-md py-2 text-slate-50">Create an account</button>
-
-                </div>
+              <div className="flex flex-row border rounded-md border-gray-400 h-1/2 px-4 py-2 items-center  bg-slate-100 gap-2">
+                <span className="flex borded rounded-full w-4 h-4 bg-slate-950 text-slate-50 items-center justify-center text-xs">1</span>
+                <span>setup your profile</span>
+              </div>
             </div>
-
+          </div>
         </div>
 
-    )
+        
+
+        <div className="flex flex-col items-center justify-center  flex-1 ">
+
+          <span className="text-2xl font-semibold text-slate-50 ">Sign up Account</span>
+          <span className="text-slate-200">Enter your personal data to create your account</span>
+
+          <div className=" flex flex-row gap-4 mt-9">
+            <button className="border border-gray-50 flex-1 flex bg-slate-100" >Google</button>
+            <button className=" border border-gray-50 flex flex-1 bg-slate-100">Github</button>
+          </div>
+
+          <div>------------or--------------</div>
+
+          <div>
+            <span>Name</span>
+            <input type="text" />
+          </div>
+
+          <div>
+            <span>Email</span>
+            <input type="text" />
+          </div>
+
+          <div>
+            <span>Password</span>
+            <input type="text" />
+            
+            
+          </div>
+
+          
 
 
+          
+        </div>
+      </div>
+    </div>
+  );
 }
