@@ -45,7 +45,7 @@ export default function SignupPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#0b0711] w-full ">
       <div className="flex w-full max-w-[1000px] h-[600px] border rounded-md border-slate-800 p-4">
-        <div className="flex flex-col flex-1 gap-2 items-center justify-center bg-[radial-gradient(ellipse_150%_100%_at_50%_100%,#000000_40%,transparent_80%),linear-gradient(to_bottom,#d8b4fe_0%,#6b21a8_45%,#000000_100%)] w-[55%] h-full">
+        <div className="flex flex-col flex-1 gap-2 items-center justify-center bg-[radial-gradient(ellipse_150%_100%_at_50%_100%,#000000_40%,transparent_80%),linear-gradient(to_bottom,#d8b4fe_0%,#6b21a8_45%,#000000_100%)] w-[55%] h-full rounded-md">
           <div className="flex flex-col items-center justify-center w-1/2">
             <h2 className="text-2xl text-slate-50 font-semibold">Loveable</h2>
             <h1 className="text-2xl text-slate-50 mt-3">Get started with us</h1>
@@ -53,26 +53,26 @@ export default function SignupPage() {
               Complete these easy steps to register your account
             </span>
 
-            <div className="mt-8 w-full flex flex-col mx-auto max-w-md gap-1">
-              <div className="flex flex-row border rounded-md border-gray-400 h-1/2 px-4 py-2 items-center bg-slate-100 gap-2">
+            <div className="mt-8 w-full flex flex-col mx-auto max-w-md gap-3">
+              <div className="flex flex-row border rounded-md border-gray-400/20  px-4 py-2.5 items-center bg-slate-100/10 backdrop-blur-sm gap-3">
                 <span className="flex borded rounded-full w-4 h-4 bg-slate-950 text-slate-50 items-center justify-center text-xs">
                   1
                 </span>
-                <span>sign up your account</span>
+                <span className="text-slate-200 text-sm">sign up your account</span>
               </div>
 
-              <div className="flex flex-row border rounded-md border-gray-400 h-1/ px-4 py-2 items-center  bg-slate-100 gap-2">
+              <div className="flex flex-row border rounded-md border-gray-400/20  px-4 py-2.5 items-center bg-slate-100/10 backdrop-blur-sm gap-3">
                 <span className="flex borded rounded-full w-4 h-4 bg-slate-950 text-slate-50 items-center justify-center text-xs">
-                  1
+                  2
                 </span>
-                <span>set up your workspace</span>
+                <span className="text-slate-200 text-sm">setup your workspace</span>
               </div>
 
-              <div className="flex flex-row border rounded-md border-gray-400 h-1/2 px-4 py-2 items-center  bg-slate-100 gap-2">
+              <div className="flex flex-row border rounded-md border-gray-400/20  px-4 py-2.5 items-center bg-slate-100/10 backdrop-blur-sm gap-3">
                 <span className="flex borded rounded-full w-4 h-4 bg-slate-950 text-slate-50 items-center justify-center text-xs">
-                  1
+                  3
                 </span>
-                <span>setup your profile</span>
+                <span className="text-slate-200 text-sm">set up your profile</span>
               </div>
             </div>
           </div>
@@ -82,7 +82,7 @@ export default function SignupPage() {
           <span className="text-2xl font-semibold text-slate-50 ">
             Sign up Account
           </span>
-          <span className="text-slate-200">
+          <span className="text-slate-400 text-sm mt-1">
             Enter your personal data to create your account
           </span>
 
@@ -99,7 +99,7 @@ export default function SignupPage() {
 
           <div className="mt-10 w-full max-w-xs gap-4 flex flex-col">
             <div className="flex flex-col gap-2">
-              <span className="text-slate-200">User Name</span>
+              <span className="text-slate-300 text-xs font-medium">User Name</span>
               <input
                 type="text"
                 className="bg-[#191919] w-full py-1 rounded-md text-slate-200"
@@ -108,7 +108,7 @@ export default function SignupPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-slate-200">Email</span>
+              <span className="text-slate-300 text-xs font-medium">Email</span>
               <input
                 type="text"
                 className="bg-[#191919] w-full py-1 rounded-md text-slate-200"
@@ -118,7 +118,7 @@ export default function SignupPage() {
 
 
             <div className="flex flex-col gap-2">
-              <span className="text-slate-200">Password</span>
+              <span className="text-slate-300 text-xs font-medium">Password</span>
               <input
                 type="text"
                 className="bg-[#191919] w-full py-1 rounded-md text-slate-200"
@@ -132,7 +132,7 @@ export default function SignupPage() {
             
 
           </div>
-          <span className="text-slate-100 mt-5">Already have an account ? Log in</span>
+          <span className="text-slate-400 text-xs mt-6">Already have an account ? Log in</span>
         </div>
       </div>
     </div>

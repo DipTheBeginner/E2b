@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-// import { Login } from "../api/auth";
+import { Signin } from "../api/auth"; 
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e) {
-    if (e) e.preventDefault();
+  async function handleSubmit() {
+    
 
     if (!email.trim() || !password.trim()) {
       return;
@@ -18,7 +18,7 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      const data = await Login(email, password);
+      const data = await Signin(email, password);
 
       if (data?.success) {
         localStorage.setItem("token", data.token);
@@ -69,7 +69,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Side: Login Form */}
+         
         <div className="flex flex-col items-center justify-center flex-1 h-full px-4">
           <span className="text-2xl font-semibold text-slate-50">
             Log in to Account
@@ -78,7 +78,7 @@ export default function LoginPage() {
             Enter your credentials to access your account
           </span>
 
-          {/* Social Logins */}
+         
           <div className="flex flex-row gap-4 mt-8 w-full max-w-xs">
             <button 
               type="button"
