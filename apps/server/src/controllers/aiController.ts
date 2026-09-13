@@ -177,6 +177,7 @@ export async function aiController(req: Request, res: Response) {
             `python3 -m http.server ${port} --bind 0.0.0.0 --directory /home/user`,
             {
               background: true,
+              timeoutMs: 0,
             },
           );
 
@@ -193,6 +194,15 @@ export async function aiController(req: Request, res: Response) {
 
           const host = sandbox.getHost(port);
           const previewUrl = `https://${host}`;
+
+          await new Promise((resolve) => setTimeout(resolve, 10000));
+          
+          const healthCheck = await sandbox.commands.run(
+            `curl -I http://127.0.0.1:${port}`,
+          );
+          
+          console.log("10 SECOND HEALTH CHECK:", healthCheck.stdout);
+          console.log("10 SECOND HEALTH ERROR:", healthCheck.stderr);
 
           toolResult = {
             success: true,
