@@ -25,6 +25,7 @@ const SYSTEM_PROMPT = `
   6. After completing the task, give the user a short summary of what was done.
   7. If a preview URL is available, include it in the final response.
   8. Do not only explain code when the user asks you to build something. Actually perform the task using the available tools.
+  9. All website/project files must be created and maintained inside /home/user/project.Do not create the main project files in another directory.
   `;
 
 export async function aiController(req: Request, res: Response) {
@@ -119,7 +120,17 @@ export async function aiController(req: Request, res: Response) {
 
       const message = data.choices?.[0]?.message;
 
-      console.log("ox Alpha response:", JSON.stringify(message, null, 2));
+      // console.log("ox Alpha response:", JSON.stringify(message, null, 2));
+      console.log("AI response received");
+      
+      if (message.tool_calls?.length) {
+        for (const toolCall of message.tool_calls) {
+          console.log(`AI → ${toolCall.function.name}`);
+        }
+      } else {
+        console.log("AI → final response");
+      }
+  
 
       if (!message) {
         throw new Error("No mesasge returned from ox alpha");
@@ -174,35 +185,35 @@ export async function aiController(req: Request, res: Response) {
           }
           const port = args.port;
           const result = await sandbox.commands.run(
-            `python3 -m http.server ${port} --bind 0.0.0.0 --directory /home/user`,
+            `python3 -m http.server ${port} --bind 0.0.0.0 --directory /home/user/project`,
             {
               background: true,
               timeoutMs: 0,
             },
           );
 
-          console.log("Server command result:", result);
+          // console.log("Server command result:", result);
 
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-          const check = await sandbox.commands.run(
-            `curl -I http://127.0.0.1:${port}`,
-          );
+          // const check = await sandbox.commands.run(
+          //   `curl -I http://127.0.0.1:${port}`,
+          // );
 
-          console.log("SERVER CHECK:", check.stdout);
-          console.log("SERVER CHECK ERROR:", check.stderr);
+          // console.log("SERVER CHECK:", check.stdout);
+          // console.log("SERVER CHECK ERROR:", check.stderr);
 
           const host = sandbox.getHost(port);
           const previewUrl = `https://${host}`;
 
-          await new Promise((resolve) => setTimeout(resolve, 10000));
+          // await new Promise((resolve) => setTimeout(resolve, 10000));
           
-          const healthCheck = await sandbox.commands.run(
-            `curl -I http://127.0.0.1:${port}`,
-          );
+          // const healthCheck = await sandbox.commands.run(
+          //   `curl -I http://127.0.0.1:${port}`,
+          // );
           
-          console.log("10 SECOND HEALTH CHECK:", healthCheck.stdout);
-          console.log("10 SECOND HEALTH ERROR:", healthCheck.stderr);
+          // console.log("10 SECOND HEALTH CHECK:", healthCheck.stdout);
+          // console.log("10 SECOND HEALTH ERROR:", healthCheck.stderr);
 
           toolResult = {
             success: true,

@@ -86,7 +86,7 @@ export async function createProjects(name:string) {
 
 
 
-export async function generateAI(prompt: string, projectId: string) {
+export async function generateAI(prompt: string, projectId: string | null) {
   const token = localStorage.getItem("token");
 
   const response = await fetch(`${BASE_URL}/ai`, {
