@@ -14,7 +14,10 @@ export async function projectController(req: Request, res: Response) {
       });
     }
 
+    
+
     const sandbox = await Sandbox.create();
+    await sandbox.commands.run("mkdir -p /home/user/project");
 
     const project = await prisma.project.create({
       data: {

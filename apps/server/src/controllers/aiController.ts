@@ -4,6 +4,7 @@ import { Sandbox } from "e2b";
 import { Request, Response } from "express";
 import { tools } from "../tools";
 import { prisma } from "@e2b-agent/database";
+import { tool } from "@openrouter/sdk/lib/tool.js";
 
 const SYSTEM_PROMPT = `
   You are an AI coding agent.
@@ -29,6 +30,12 @@ const SYSTEM_PROMPT = `
   `;
 
 export async function aiController(req: Request, res: Response) {
+  res.setHeader("content-Type", "text/event-stream");
+  res.setHeader("cache-control", "no-cache");
+  res.setHeader("connection", "keep-alive");
+
+  res.write(`data : AI request received\n\n`);
+
   try {
     const { prompt, projectId } = req.body;
 
@@ -98,8 +105,8 @@ export async function aiController(req: Request, res: Response) {
             Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           },
           body: JSON.stringify({
-            model: "z-ai/glm-5.2",
-            max_tokens: 8000,
+            model: "openrouter/free",
+            max_tokens: 10000,
             messages,
             tools,
           }),
@@ -109,20 +116,37 @@ export async function aiController(req: Request, res: Response) {
       if (!response.ok) {
         const errorText = await response.text();
 
-        return res.status(response.status).json({
-          success: false,
-          message: "Openrouter request failed",
-          error: errorText,
-        });
+        res.write(
+          `data: ${JSON.stringify({
+            type: "error",
+            message: "Openrouter request failed",
+            error: errorText,
+          })}\n\n`,
+        );
+
+        res.end();
+
+        return;
       }
 
       const data = await response.json();
 
       const message = data.choices?.[0]?.message;
 
+     
+      
+      
+
       // console.log("ox Alpha response:", JSON.stringify(message, null, 2));
       console.log("AI response received");
-      
+
+      res.write(
+        `data: ${JSON.stringify({
+          type: "status",
+          message: "AI response received",
+        })}\n\n`,
+      );
+
       if (message.tool_calls?.length) {
         for (const toolCall of message.tool_calls) {
           console.log(`AI → ${toolCall.function.name}`);
@@ -130,24 +154,59 @@ export async function aiController(req: Request, res: Response) {
       } else {
         console.log("AI → final response");
       }
-  
 
       if (!message) {
         throw new Error("No mesasge returned from ox alpha");
       }
 
       if (!message.tool_calls || message.tool_calls.length === 0) {
-        return res.status(200).json({
-          success: true,
-          output: message.content,
-        });
+        res.write(
+          `data: ${JSON.stringify({
+            type: "done",
+            output: message.content,
+          })}\n\n`,
+        );
+
+        res.end();
+
+        return;
       }
 
       messages.push(message);
 
       for (const toolCall of message.tool_calls) {
         const toolName = toolCall.function.name;
+
+        console.log("TOOL NAME:", toolName);
+
+        
+        console.log("RAW TOOL ARGUMENTS:", toolCall.function.arguments);
         const args = JSON.parse(toolCall.function.arguments);
+
+        let toolEvent : Record<string, unknown> = {
+          type: "tool",
+          tool :toolName
+        }
+
+        if (
+          toolName === "update_file" ||"create_file" || "delete_file"
+        ) {
+          toolEvent.path = args.path;
+        }
+
+        if (toolName === "state_server") {
+          toolEvent.path = args.port;
+        }
+
+        if (toolName === "run_command") {
+          toolEvent.command = args.command;
+        }
+
+        console.log("TOOL SSE EVENT:", toolEvent);
+
+        res.write(
+          `data:${JSON.stringify(toolEvent)}\n\n`,
+        );
 
         let toolResult: unknown;
 
@@ -184,7 +243,7 @@ export async function aiController(req: Request, res: Response) {
             throw new Error("start_server tool was called without a port");
           }
           const port = args.port;
-          const result = await sandbox.commands.run(
+          await sandbox.commands.run(
             `python3 -m http.server ${port} --bind 0.0.0.0 --directory /home/user/project`,
             {
               background: true,
@@ -207,11 +266,11 @@ export async function aiController(req: Request, res: Response) {
           const previewUrl = `https://${host}`;
 
           // await new Promise((resolve) => setTimeout(resolve, 10000));
-          
+
           // const healthCheck = await sandbox.commands.run(
           //   `curl -I http://127.0.0.1:${port}`,
           // );
-          
+
           // console.log("10 SECOND HEALTH CHECK:", healthCheck.stdout);
           // console.log("10 SECOND HEALTH ERROR:", healthCheck.stderr);
 
@@ -265,10 +324,14 @@ export async function aiController(req: Request, res: Response) {
       }
     }
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "AI request failed",
-      error: String(error),
-    });
+    res.write(
+      `data: ${JSON.stringify({
+        type: "error",
+        message: "AI request failed",
+        error: String(error),
+      })}\n\n`, 
+    );
+
+    res.end();
   }
 }

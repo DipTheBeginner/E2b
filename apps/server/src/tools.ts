@@ -3,7 +3,8 @@ export const tools = [
     type: "function" as const,
     function: {
       name: "update_file",
-      description: "Create or update a file inside the E2B sandbox",
+      description:
+        "Create or update ONE specific file inside the E2B sandbox. The path must point to a file, not a directory.",
       parameters: {
         type: "object",
         properties: {
@@ -25,7 +26,8 @@ export const tools = [
     type: "function" as const,
     function: {
       name: "read_file",
-      description: "Read the content of a file inside the E2B sandbox",
+      description:
+        "Read the content of ONE specific file inside the E2B sandbox. Do not use this tool on directories. If you need to inspect a directory, use run_command with ls instead.",
       parameters: {
         type: "object",
         properties: {
