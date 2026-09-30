@@ -4,7 +4,7 @@ export const tools = [
     function: {
       name: "update_file",
       description:
-        "Create or update ONE specific file inside the E2B sandbox. The path must point to a file, not a directory.",
+        "Create or update ONE specific FILE inside /home/user/project. The path must identify a file, never a directory. Provide the path relative to /home/user/project. Examples: index.html, src/App.tsx, src/components/Card.tsx. Do not use /home/user/project itself as the path.",
       parameters: {
         type: "object",
         properties: {
@@ -27,7 +27,7 @@ export const tools = [
     function: {
       name: "read_file",
       description:
-        "Read the content of ONE specific file inside the E2B sandbox. Do not use this tool on directories. If you need to inspect a directory, use run_command with ls instead.",
+        "Path relative to /home/user/project. This must be a FILE path, never a directory. Examples: index.html, src/App.tsx. If you need to inspect directories, use run_command with ls.",
       parameters: {
         type: "object",
         properties: {
@@ -46,7 +46,8 @@ export const tools = [
     type: "function" as const,
     function: {
       name: "delete_file",
-      description: "Delete a file inside the E2B sandbox",
+      description:
+        "Path relative to /home/user/project. This must be a FILE path, never a directory.",
       parameters: {
         type: "object",
         properties: {

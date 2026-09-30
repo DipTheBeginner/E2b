@@ -4,7 +4,6 @@ import { Sandbox } from "e2b";
 import { Request, Response } from "express";
 import { tools } from "../tools";
 import { prisma } from "@e2b-agent/database";
-import { tool } from "@openrouter/sdk/lib/tool.js";
 
 const SYSTEM_PROMPT = `
   You are an AI coding agent.
@@ -106,7 +105,7 @@ export async function aiController(req: Request, res: Response) {
           },
           body: JSON.stringify({
             model: "openrouter/free",
-            max_tokens: 10000,
+            max_tokens: 3000,
             messages,
             tools,
           }),
@@ -178,35 +177,8 @@ export async function aiController(req: Request, res: Response) {
         const toolName = toolCall.function.name;
 
         console.log("TOOL NAME:", toolName);
-
-        
         console.log("RAW TOOL ARGUMENTS:", toolCall.function.arguments);
         const args = JSON.parse(toolCall.function.arguments);
-
-        let toolEvent : Record<string, unknown> = {
-          type: "tool",
-          tool :toolName
-        }
-
-        if (
-          toolName === "update_file" ||"create_file" || "delete_file"
-        ) {
-          toolEvent.path = args.path;
-        }
-
-        if (toolName === "state_server") {
-          toolEvent.path = args.port;
-        }
-
-        if (toolName === "run_command") {
-          toolEvent.command = args.command;
-        }
-
-        console.log("TOOL SSE EVENT:", toolEvent);
-
-        res.write(
-          `data:${JSON.stringify(toolEvent)}\n\n`,
-        );
 
         let toolResult: unknown;
 
@@ -329,7 +301,7 @@ export async function aiController(req: Request, res: Response) {
         type: "error",
         message: "AI request failed",
         error: String(error),
-      })}\n\n`, 
+      })}\n\n`,
     );
 
     res.end();
