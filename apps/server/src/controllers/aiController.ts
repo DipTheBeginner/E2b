@@ -105,7 +105,7 @@ export async function aiController(req: Request, res: Response) {
           },
           body: JSON.stringify({
             model: "openrouter/free",
-            max_tokens: 3000,
+            max_tokens: 5000,
             messages,
             tools,
           }),
@@ -148,11 +148,22 @@ export async function aiController(req: Request, res: Response) {
 
       if (message.tool_calls?.length) {
         for (const toolCall of message.tool_calls) {
-          console.log(`AI → ${toolCall.function.name}`);
+          const toolName = toolCall.function.name;
+          const args = JSON.parse(toolCall.function.arguments);
+      
+          console.log(`AI → ${toolName}`);
+      
+          res.write(
+            `data: ${JSON.stringify({
+              type: "tool",
+              tool: toolName,
+              ...args,
+            })}\n\n`,
+          );
         }
       } else {
         console.log("AI → final response");
-      }
+      } 
 
       if (!message) {
         throw new Error("No mesasge returned from ox alpha");
@@ -183,9 +194,9 @@ export async function aiController(req: Request, res: Response) {
         let toolResult: unknown;
 
         if (toolName === "update_file") {
-          const filePath = args.path.startsWith("/home/user/")
+          const filePath = args.path.startsWith("/home/user/project/")
             ? args.path
-            : `/home/user/${args.path}`;
+            : `/home/user/project/${args.path}`;
 
           await sandbox.files.write(filePath, args.content);
 
@@ -223,28 +234,12 @@ export async function aiController(req: Request, res: Response) {
             },
           );
 
-          // console.log("Server command result:", result);
-
-          // await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          // const check = await sandbox.commands.run(
-          //   `curl -I http://127.0.0.1:${port}`,
-          // );
-
-          // console.log("SERVER CHECK:", check.stdout);
-          // console.log("SERVER CHECK ERROR:", check.stderr);
+          
 
           const host = sandbox.getHost(port);
           const previewUrl = `https://${host}`;
 
-          // await new Promise((resolve) => setTimeout(resolve, 10000));
-
-          // const healthCheck = await sandbox.commands.run(
-          //   `curl -I http://127.0.0.1:${port}`,
-          // );
-
-          // console.log("10 SECOND HEALTH CHECK:", healthCheck.stdout);
-          // console.log("10 SECOND HEALTH ERROR:", healthCheck.stderr);
+          
 
           toolResult = {
             success: true,
@@ -252,11 +247,23 @@ export async function aiController(req: Request, res: Response) {
             previewUrl,
             message: "Web server started successfully",
           };
+
+          res.write(
+            `data:${JSON.stringify({
+              type: "preview",
+              url:previewUrl,
+            })}\n\n`
+          )
+
+
+
+
+          
           console.log("previewUrl", previewUrl);
         } else if (toolName === "read_file") {
-          const filePath = args.path.startsWith("/home/user/")
+          const filePath = args.path.startsWith("/home/user")
             ? args.path
-            : `/home/user/${args.path}`;
+            : `/home/user/project/${args.path}`;
 
           const content = await sandbox.files.read(filePath);
 
@@ -268,9 +275,9 @@ export async function aiController(req: Request, res: Response) {
 
           console.log("File read:", filePath);
         } else if (toolName === "delete_file") {
-          const filePath = args.path.startsWith("/home/user/")
+          const filePath = args.path.startsWith("/home/user/project")
             ? args.path
-            : `/home/user/${args.path}`;
+            : `/home/user/project/${args.path}`;
 
           await sandbox.files.remove(filePath);
 

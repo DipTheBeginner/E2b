@@ -60,18 +60,16 @@ export default function LovableDashboard() {
         if (event.type === "tool") {
           setAiActivity((current) => [...current, event]);
         }
+
+        if (event.type === "preview") {
+          setPreviewUrl(event.url);
+        }
       });
 
       // console.log("AI Response", aiData);
       setIframeKey((key) => key + 1);
 
-      if (aiData.success && aiData.output) {
-        const match = aiData.output.match(/https:\/\/[^\s)\]]+\.e2b\.app/);
-
-        if (match) {
-          setPreviewUrl(match[0]);
-        }
-      }
+      
 
       const projectsData = await getProjects();
 
